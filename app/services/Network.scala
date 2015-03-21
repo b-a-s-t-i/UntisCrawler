@@ -88,14 +88,4 @@ class Network {
       .post("")//TODO
   }
 
-  def validateCaptcha(response: String): Future[WSResponse] = {
-    val endPoint = "https://www.google.com/recaptcha/api/siteverify"
-    val secret = Play.current.configuration.getString("recaptcha.secret").get
-
-    WS.url(endPoint).withQueryString(
-      "secret" -> secret,
-      "response" -> response
-    ).post("")
-  }
-
 }

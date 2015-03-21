@@ -1,61 +1,56 @@
 package controllers
 
-import model.UiUser
-import play.api.mvc._
+import com.google.api.client.googleapis.auth.oauth2.{GoogleIdTokenVerifier, GoogleIdToken}
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.jackson2.JacksonFactory
+import play.api.Logger
 import provider.UserProvider
-
-import scala.concurrent.Future
 
 trait Secured {
 
   val userProvider: UserProvider
 
-  def username(request: RequestHeader) = request.session.get(Security.username)
+  lazy val jsonFactory = new JacksonFactory
+  lazy val tokenVerifier = new GoogleIdTokenVerifier(new NetHttpTransport(), jsonFactory)
 
-  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.UserController.start)
 
-  def withAuth(f: => String => Request[AnyContent] => Result) = {
-    Security.Authenticated(username, onUnauthorized) { user =>
-      Action(request => f(user)(request))
+
+  def verifyGoogleAuth(stringToken: String): Unit ={
+
+    val token = GoogleIdToken.parse(jsonFactory, stringToken)
+    if(tokenVerifier.verify(token)){
+      val tempPayload :GoogleIdToken.Payload = token.getPayload
+
+      Logger.info(
+        tempPayload.getEmail + " " +
+        tempPayload.getEmailVerified + " " +
+        tempPayload.getHostedDomain + " " +
+        tempPayload.getAudience + " " +
+        tempPayload.getAuthorizedParty
+      )
+
+      Logger.info(tempPayload.toPrettyString)
+      Logger.info(tempPayload.toString)
+
     }
+//
+//    GoogleIdToken.Payload payload = null;
+//    try {
+//      GoogleIdToken token = GoogleIdToken.parse(mJFactory, tokenString);
+//      if (mVerifier.verify(token)) {
+//        GoogleIdToken.Payload tempPayload = token.getPayload();
+//        if (!tempPayload.getAudience().equals(mAudience))
+//          mProblem = "Audience mismatch";
+//        else if (!mClientIDs.contains(tempPayload.getIssuee()))
+//          mProblem = "Client ID mismatch";
+//        else
+//          payload = tempPayload;
+//      }
+//    } catch (GeneralSecurityException e) {
+//      mProblem = "Security issue: " + e.getLocalizedMessage();
+//    } catch (IOException e) {
+//      mProblem = "Network problem: " + e.getLocalizedMessage();
+//    }
+//    return payload;
   }
-
-  def withAuthO(f: => Option[UiUser] => Request[AnyContent] => Result) = {
-    Action{ request =>
-      val data = request.session.get(Security.username)
-      val user = data.map(userProvider.getUserByEmail(_)).flatten
-      f(user)(request)
-    }
-  }
-
-  def withAuthOAsync[A](bp: BodyParser[A])(f: (Request[A], Option[UiUser]) => Future[Result]) = {
-    Action.async(bp){ request =>
-      val data = request.session.get(Security.username)
-      val user = data.map(userProvider.getUserByEmail(_)).flatten
-      f(request, user)
-    }
-  }
-
-  def BasicAuth[A](bp: BodyParser[A])(f: (Request[A], String, String) => Result): Action[A] = {
-    Action(bp){ request =>
-      request.headers.get("Authorization").map { basicAuth =>
-        val (user, pass) = decodeBasicAuth(basicAuth)
-        if (userProvider.isLoginValid(user, pass)) {
-          f(request, user, pass)
-        }else{
-          Results.Unauthorized
-        }
-      }.getOrElse{
-        Results.Unauthorized
-      }
-    }
-  }
-
-  def decodeBasicAuth(auth: String) = {
-    val baStr = auth.replaceFirst("Basic ", "")
-    val Array(user, pass) = new String(new sun.misc.BASE64Decoder().decodeBuffer(baStr), "UTF-8").split(":")
-    (user, pass)
-  }
-
-
 }

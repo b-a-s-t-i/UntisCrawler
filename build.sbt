@@ -21,5 +21,6 @@ libraryDependencies ++= Seq(
   "com.github.tototoshi"          %% "slick-joda-mapper" % "1.2.0",
   "org.joda"                      %   "joda-convert"  % "1.7",
   "org.mindrot"                   %   "jbcrypt"       % "0.3m",
-  "com.fasterxml.jackson.module"  %   "jackson-module-scala_2.11"   % "2.5.1"
+  "com.fasterxml.jackson.module"  %   "jackson-module-scala_2.11"   % "2.5.1",
+  "com.google.api-client" % "google-api-client" % "1.19.1"
 )
