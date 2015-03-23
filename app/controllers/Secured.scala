@@ -7,7 +7,7 @@ import com.google.api.client.googleapis.auth.oauth2.{GoogleIdTokenVerifier, Goog
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import model.UiUser
-import play.api.Logger
+import play.api.{Play, Logger}
 import play.api.mvc._
 import provider.UserProvider
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
@@ -16,13 +16,12 @@ import scala.concurrent.Future
 
 trait Secured {
 
-  val AUDIENCE = "870470316286-maa83ila3r2hnqkprjtilmajsjb53o0g.apps.googleusercontent.com"
-  val AUTHORIZED_PARTY = "870470316286-2oq505l604nsv26osp4fi05mvhstlgcf.apps.googleusercontent.com"
-  val HEADER = "Authorization"
   val userProvider: UserProvider
+  val tokenVerifier: GoogleIdTokenVerifier
 
-  lazy val jsonFactory = new JacksonFactory
-  lazy val tokenVerifier = new GoogleIdTokenVerifier(new NetHttpTransport(), jsonFactory)
+  val AUDIENCE = Play.current.configuration.getString("google.auth.audience").get
+  val AUTHORIZED_PARTY = Play.current.configuration.getString("google.auth.authorized_party").get
+  val HEADER = "Authorization"
 
   def auth[A](bp: BodyParser[A])(f: (Request[A], UiUser) => Future[Result]) = {
     //pyramid of doom
@@ -69,7 +68,7 @@ trait Secured {
   def verifyGoogleAuth(stringToken: String): Future[Option[GoogleIdToken.Payload]] = {
     Future {
       try {
-        val token = GoogleIdToken.parse(jsonFactory, stringToken)
+        val token = GoogleIdToken.parse(new JacksonFactory, stringToken)
         if (tokenVerifier.verify(token)) {
           val tempPayload: GoogleIdToken.Payload = token.getPayload
           (tempPayload.getAudience, tempPayload.getAuthorizedParty) match {

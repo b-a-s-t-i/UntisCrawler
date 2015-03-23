@@ -2,6 +2,9 @@ package modules
 
 import actors.{NotificationActor, AnalystActor, DataFetcher, TimedActor}
 import akka.actor.ActorSystem
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.jackson2.JacksonFactory
 import controllers.{TimetableController, UserController, HomeController}
 import provider._
 import scaldi.Module
@@ -16,6 +19,7 @@ class ServiceModule extends Module{
   bind [WebUntisService] when (inDevMode or inTestMode or inProdMode) to new WebUntisServiceImpl
   bind [TimetableEventService] when (inDevMode or inTestMode or inProdMode) to new TimetableEventServiceImpl
   bind [UserNotificationService] when (inDevMode or inTestMode or inProdMode) to new UserNotificationServiceImpl
+  bind [GcmService] when (inDevMode or inTestMode or inProdMode) to new GcmServiceImpl()
 }
 
 class ProviderModule extends Module{
@@ -33,6 +37,7 @@ class StorageModule extends Module{
 
 class NetworkModule extends Module{
   bind [Network] when (inDevMode or inTestMode or inProdMode) to new Network
+  bind [GoogleIdTokenVerifier] when (inDevMode or inTestMode or inProdMode) to new GoogleIdTokenVerifier(new NetHttpTransport, new JacksonFactory)
 }
 
 class AkkaModule extends Module{
@@ -44,7 +49,6 @@ class AkkaModule extends Module{
 }
 
 class ControllerModule extends Module{
-
   binding to new HomeController
   binding to new UserController
   binding to new TimetableController

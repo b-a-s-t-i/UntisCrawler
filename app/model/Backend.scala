@@ -81,4 +81,6 @@ object UserNotification{
   final val ADDRESS_KEY = "address"
 
   final val FK_USER = "fk_user"
+
+  final val TYPE_PUSH = 1;
 }

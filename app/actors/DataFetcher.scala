@@ -17,6 +17,7 @@ class DataFetcher(implicit inj: Injector) extends Actor with AkkaInjectable{
   val userProvider = inject[UserProvider]
   val webUntisProvider = inject[WebUntisProvider]
   val analystActor = injectActorRef[AnalystActor]
+  val notificationActor = injectActorRef[NotificationActor]
 
   override def receive: Receive = {
     case user: UiUserBundle => doSomeStuff(user)
@@ -47,6 +48,9 @@ class DataFetcher(implicit inj: Injector) extends Actor with AkkaInjectable{
         case None => {
           Logger.error(s"Error auth (2): ${uiBundle.uiUser.email}")
           userProvider.setUserBundleFailed(uiBundle)
+
+          //notify user
+          notificationActor ! (uiBundle)
         }
       }
 

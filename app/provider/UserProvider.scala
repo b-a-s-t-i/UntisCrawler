@@ -2,11 +2,11 @@ package provider
 
 import java.util.UUID
 
-import model.{TimetableConfig, UiUserBundle, UiTimetableConfig, UiUser}
+import model._
 import org.joda.time.DateTime
 import play.api.Logger
 import scaldi.{Injector, Injectable}
-import services.{TimetableConfigService, UserService}
+import services.{UserNotificationService, TimetableConfigService, UserService}
 
 
 trait UserProvider{
@@ -16,22 +16,25 @@ trait UserProvider{
   def getUserByEmail(email: String): Option[UiUser]
   def setUserBundleFailed(uiUserBundle: UiUserBundle): Unit
   def addTimetableConfig(userId: UUID, server: String, school: String, user: String, password: String, elmentId: Int, elmentType: Int): Unit
+  def addUserPushNotification(userId: UUID, pushId: String): Unit
 }
 
 class UserProviderImpl(implicit inj: Injector) extends UserProvider with Injectable{
 
   val userService: UserService = inject[UserService]
   val timetableConfigService: TimetableConfigService = inject[TimetableConfigService]
+  val userNotificationService: UserNotificationService = inject[UserNotificationService]
 
   override def getActivatedUser(): List[UiUserBundle] = {
     userService.getAllUser().map{ user =>
-      (user, timetableConfigService.getTimetableConfigByUser(user.userId))
+      (user, timetableConfigService.getTimetableConfigByUser(user.userId), userNotificationService.getNotificationsByUserId(user.userId))
     }.filter{ e =>
       (e._2.isDefined && !e._2.get.error)
     }.map{ e =>
       UiUserBundle(
         UiUser(e._1),
-        UiTimetableConfig(e._2.get)
+        UiTimetableConfig(e._2.get),
+        e._3.map(UiUserNotification(_))
       )
     }
   }
@@ -66,5 +69,9 @@ class UserProviderImpl(implicit inj: Injector) extends UserProvider with Injecta
     }else{
       url
     }
+  }
+
+  override def addUserPushNotification(userId: UUID, pushId: String): Unit = {
+    userNotificationService.addNotification(UserNotification(UUID.randomUUID(), userId, UserNotification.TYPE_PUSH, pushId))
   }
 }

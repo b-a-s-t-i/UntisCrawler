@@ -70,21 +70,27 @@ class Network {
     WS.url(url).post(body)
   }
 
-
   def doTimetableRequest(serverUrl: String, authCookie: String, requestParams: Map[String, Seq[String]]): Future[WSResponse] = {
     val urlAppendix = "/WebUntis/Timetable.do"
     val url = s"${serverUrl}${urlAppendix}?request.preventCache=${System.currentTimeMillis()}"
     WS.url(url).withHeaders("Cookie" -> authCookie).post(requestParams)
   }
 
-  def push(): Unit ={
+  def sendGcm(registrationId: List[String], notificationType: String, affectedIds: List[String]): Unit ={
     val apiKey = Play.current.configuration.getString("gcm.api.key").get
     val endpoint = "https://android.googleapis.com/gcm/send"
     WS.url(endpoint)
       .withHeaders(
-      "Content-Type" -> "application/json",
-      "Authorization" -> apiKey)
-      .post("")//TODO
+        "Content-Type" -> "application/json",
+        "Authorization" -> apiKey)
+      .post(Json.obj(
+        "registration_ids" -> registrationId,
+        "data" -> Json.obj(
+          "notificationType" -> notificationType,
+          "affectedIds" -> affectedIds
+        )
+      )
+    )
   }
 
 }

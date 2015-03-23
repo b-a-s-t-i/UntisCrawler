@@ -1,5 +1,6 @@
 package controllers
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import model.{MobileTimetableUserDataResponse}
 import play.api.mvc.{Controller}
 import provider.{WebUntisProvider, UserProvider}
@@ -12,6 +13,8 @@ import scala.concurrent.Future
 class TimetableController(implicit inj: Injector) extends Controller with Injectable with Secured {
 
   override val userProvider: UserProvider = inject[UserProvider]
+  override val tokenVerifier: GoogleIdTokenVerifier = inject[GoogleIdTokenVerifier]
+
   val webuntisProvider: WebUntisProvider = inject[WebUntisProvider]
 
 
@@ -27,4 +30,12 @@ class TimetableController(implicit inj: Injector) extends Controller with Inject
 
     result.map(r => Ok(JsonUtil.getMobileResponse(user.userId, r)))
   }
+
+  def saveTimetableConfig(server: String, school: String, username: String, password: String, elementId: Int, elementTyp: Int) = auth(parse.anyContent){ (request, user) =>
+    Future{
+      userProvider.addTimetableConfig(user.userId, server, school, username, password, elementId, elementTyp)
+      Ok
+    }
+  }
+
 }
