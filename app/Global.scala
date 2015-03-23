@@ -26,7 +26,7 @@ object Global extends GlobalSettings with ScaldiSupport with AkkaInjectable{
   override def onStart(app: Application): Unit = {
     super.onStart(app)
 
-    implicit val system = inject [ActorSystem]
+    implicit val system = inject[ActorSystem]
 //    Akka.system.scheduler.schedule(FiniteDuration.apply(10,TimeUnit.SECONDS), FiniteDuration.apply(10,TimeUnit.SECONDS),  injectActorRef[TimedActor], "ping")
   }
 

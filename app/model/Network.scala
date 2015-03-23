@@ -31,4 +31,8 @@ case class TimetableResponse(lastImportTimestamp: Long, data: TimetableData)
 case class TimetableResponseWrapper(result: TimetableResponse, isSessionTimeout: Boolean)
 
 
+case class TimetableElementList(elementType: Int, elementTypeLabel: String, elements: List[TimetableElement])
 
+case class TimetableUserData(personType: Int, personId: Int, klasseId: Int)
+
+case class TimetableUserDataResponse(result: TimetableUserData)

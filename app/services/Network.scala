@@ -76,7 +76,7 @@ class Network {
     WS.url(url).withHeaders("Cookie" -> authCookie).post(requestParams)
   }
 
-  def sendGcm(registrationId: List[String], notificationType: String, affectedIds: List[String]): Unit ={
+  def sendGcm(registrationId: List[String], notificationType: String, affectedIds: List[String]): Unit = {
     val apiKey = Play.current.configuration.getString("gcm.api.key").get
     val endpoint = "https://android.googleapis.com/gcm/send"
     WS.url(endpoint)

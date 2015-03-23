@@ -27,7 +27,7 @@ class NotificationActor(implicit inj: Injector) extends Actor with AkkaInjectabl
     gcmService.sendGcmUpdatedTimetable(userBundle, events)
   }
 
-  def notifyInvalidConfig(config: UiUserBundle): Unit ={
+  def notifyInvalidConfig(config: UiUserBundle): Unit = {
     Logger.info("invalid config")
 
     gcmService.sendGcmInvalidConfig(config)
