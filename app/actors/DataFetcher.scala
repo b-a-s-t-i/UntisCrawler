@@ -26,7 +26,7 @@ class DataFetcher(implicit inj: Injector) extends Actor with AkkaInjectable{
     val config = uiBundle.uiTimetableConfig
     Logger.info(s"load data: ${config}")
 
-    webUntisProvider.loadTimetable(config.url, config.school, config.userName, config.password, config.elementType, config.elmentId).map{ data =>
+    webUntisProvider.loadTimetable(config.url, config.school, config.userName, config.password, config.elementType, config.elementId).map{ data =>
       data match {
         case Some(timetable) => {
           Logger.info(timetable.toString())

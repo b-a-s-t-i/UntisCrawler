@@ -11,11 +11,9 @@ import services.{TimetableConfigService, UserService}
 
 trait UserProvider{
   def getActivatedUser(): List[UiUserBundle]
-  def addUser(email: String, password: String): Boolean
+  def addUser(email: String): Boolean
   def isEmailRegistered(email: String): Boolean
-  def isLoginValid(email: String, password: String): Boolean
   def getUserByEmail(email: String): Option[UiUser]
-  def setUserActivatedByEmail(uuid: UUID, l: Long): Boolean
   def setUserBundleFailed(uiUserBundle: UiUserBundle): Unit
   def addTimetableConfig(userId: UUID, server: String, school: String, user: String, password: String, elmentId: Int, elmentType: Int): Unit
 }
@@ -26,7 +24,7 @@ class UserProviderImpl(implicit inj: Injector) extends UserProvider with Injecta
   val timetableConfigService: TimetableConfigService = inject[TimetableConfigService]
 
   override def getActivatedUser(): List[UiUserBundle] = {
-    userService.getActivatedUser().map{ user =>
+    userService.getAllUser().map{ user =>
       (user, timetableConfigService.getTimetableConfigByUser(user.userId))
     }.filter{ e =>
       (e._2.isDefined && !e._2.get.error)
@@ -38,17 +36,14 @@ class UserProviderImpl(implicit inj: Injector) extends UserProvider with Injecta
     }
   }
 
-  override def addUser(email: String, password: String): Boolean = {
-    userService.addUser(email, password)
+  override def addUser(email: String): Boolean = {
+    userService.addUser(email)
   }
 
   override def isEmailRegistered(email: String): Boolean = {
     userService.isUserRegistered(email)
   }
 
-  override def isLoginValid(email: String, password: String): Boolean = {
-    userService.isLoginValid(email, password)
-  }
 
   override def getUserByEmail(email: String): Option[UiUser] = {
     userService.getUserByEmail(email).map{
@@ -56,20 +51,9 @@ class UserProviderImpl(implicit inj: Injector) extends UserProvider with Injecta
     }
   }
 
-  override def setUserActivatedByEmail(uuid: UUID, timeStamp: Long): Boolean = {
-    userService.getUserById(uuid).map{ user =>
-      if(user.timeStampCreated.getMillis == timeStamp){
-        userService.setUserActivated(user, true, user.activatedByAdmin)
-        true
-      }else{
-        false
-      }
-    }.getOrElse(false)
-  }
-
   override def setUserBundleFailed(uiUserBundle: UiUserBundle): Unit = {
     val c = uiUserBundle.uiTimetableConfig
-    timetableConfigService.setTimetableConfigError(TimetableConfig(c.configId,c.userId,c.url,c.school,c.elementType,c.elmentId,c.userName,c.password,c.error), true)
+    timetableConfigService.setTimetableConfigError(TimetableConfig(c.configId,c.userId,c.url,c.school,c.elementType,c.elementId,c.userName,c.password,c.error), true)
   }
 
   override def addTimetableConfig(userId: UUID, server: String, school: String, user: String, password: String, elementId: Int, elementType: Int): Unit = {

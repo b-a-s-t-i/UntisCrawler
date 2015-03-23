@@ -67,7 +67,6 @@ class Network {
         "password" -> password
       )
     )
-    Logger.info(body.toString())
     WS.url(url).post(body)
   }
 

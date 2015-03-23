@@ -5,7 +5,7 @@
 
 create table "timetableevents" ("id" UUID NOT NULL PRIMARY KEY,"userId" UUID NOT NULL,"configId" UUID NOT NULL,"datetime" TIMESTAMP NOT NULL,"timetableEvent" VARCHAR(200000) NOT NULL);
 create table "untisconfig" ("id" UUID NOT NULL PRIMARY KEY,"uid" UUID NOT NULL,"url" VARCHAR(254) NOT NULL,"school" VARCHAR(254) NOT NULL,"elementType" INTEGER NOT NULL,"elementId" INTEGER NOT NULL,"untisuser" VARCHAR(254) NOT NULL,"untispassword" VARCHAR(254) NOT NULL,"error" BOOLEAN NOT NULL);
-create table "user" ("email" VARCHAR(254) NOT NULL,"password" VARCHAR(254) NOT NULL,"id" UUID NOT NULL PRIMARY KEY,"dateTime" TIMESTAMP NOT NULL,"activatedByUser" BOOLEAN NOT NULL,"activatedByAdmin" BOOLEAN NOT NULL);
+create table "user" ("email" VARCHAR(254) NOT NULL,"id" UUID NOT NULL PRIMARY KEY,"dateTime" TIMESTAMP NOT NULL);
 create unique index "email_index" on "user" ("email");
 create table "usernotification" ("id" UUID NOT NULL PRIMARY KEY,"userId" UUID NOT NULL,"type" INTEGER NOT NULL,"address" VARCHAR(254) NOT NULL);
 alter table "timetableevents" add constraint "fk_config" foreign key("userId") references "user"("id") on update NO ACTION on delete NO ACTION;

@@ -5,34 +5,16 @@
 # Home page
 
 # HTML stuff
-GET         /                                    @controllers.HomeController.index
-#GET         /user                                @controllers.UserController.start
-#GET         /user/start                          @controllers.UserController.start
-#GET         /user/config                         @controllers.UserController.addConfig
-#
-#GET         /user/activate/:timestamp/:id        @controllers.UserController.activate(timestamp: Long, id: String)
-#GET         /user/logout                         @controllers.UserController.logout
-#
-#POST        /user/auth                           @controllers.UserController.authenticate
-#POST        /user/start                          @controllers.UserController.validateCreateUserForm
-#
-#POST        /js/search                           @controllers.TimetableController.schoolSearch(q: String)
-#POST        /js/userData                         @controllers.TimetableController.userData(se: String, sc: String, u: String, p: String)
-#POST        /js/loadLists                        @controllers.TimetableController.loadLists(se: String, sc: String, u: String, p: String)
-#POST        /js/addConfig                        @controllers.TimetableController.addConfig(se: String, sc: String, u: String, p: String, ei: Int, et: Int)
+GET         /                                  @controllers.HomeController.index
 
+GET         /user/register                     @controllers.UserController.register
 
-#
-#GET         /list/:elementType        @controllers.HomeController.getList(elementType: Int)
-#
-#POST        /search                   @controllers.HomeController.schoolSearch(searchParam: String)
-#
-#POST        /loadLists                @controllers.HomeController.loadLists(server: String, school: String, user: String, password: String)
-#
-#POST        /loadTimetable            @controllers.HomeController.getTimetable(server: String, school: String, user: String, password: String, elementType: Int, elementId: Int)
-#
-##GET        /loadLists                @controllers.HomeController.loadLists()
-#
+POST        /user/getId                        @controllers.UserController.getId
+
+POST        /timetable/schoolSearch            @controllers.TimetableController.schoolSearch(query: String)
+
+POST        /timetable/loadTimetableData       @controllers.TimetableController.loadTimetableData(server: String, school: String, user: String, password: String)
+
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                        controllers.Assets.at(path="/public", file)
+GET         /assets/*file         controllers.Assets.at(path="/public", file)

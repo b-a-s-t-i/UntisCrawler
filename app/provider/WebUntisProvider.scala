@@ -1,6 +1,7 @@
 package provider
 
-import model.TimetableResponse
+import model._
+import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 import scaldi.{Injector, Injectable}
 import services.WebUntisService
@@ -10,10 +11,10 @@ import utils.{JsonUtil, TimetableUtil}
 import scala.concurrent.Future
 
 trait WebUntisProvider {
-  def doSchoolQuerty(query: String): Future[JsValue]
+  def doSchoolQuerty(query: String): Future[List[SchoolSearchResult]]
   def authenticate(server: String, school: String, username: String, password: String): Future[Option[String]]
-  def loadList(server: String, school: String, username: String, password: String): Future[JsValue]
-  def loadUserData(server: String, school: String, username: String, password: String): Future[JsValue]
+  def loadList(server: String, school: String, username: String, password: String): Future[List[TimetableElementList]]
+  def loadUserData(server: String, school: String, username: String, password: String): Future[TimetableUserData]
   def loadTimetable(server: String, school: String, username: String, password: String, elementType: Int, elementId: Int): Future[Option[List[Option[TimetableResponse]]]]
 }
 
@@ -21,9 +22,14 @@ class WebUntisProviderImpl(implicit inj: Injector) extends WebUntisProvider with
 
   val webuntisService: WebUntisService = inject[WebUntisService]
 
-  override def doSchoolQuerty(query: String): Future[JsValue] = {
+  override def doSchoolQuerty(query: String): Future[List[SchoolSearchResult]] = {
     webuntisService.doSchoolSearch(query).map{ response =>
-      Json.parse(response.body)
+      val result = JsonUtil.objectMapper.readValue[SchoolSearchResponse](response.body)
+      if(result.result != null){
+        result.result.schools
+      }else{
+        List()
+      }
     }
   }
 
@@ -35,29 +41,30 @@ class WebUntisProviderImpl(implicit inj: Injector) extends WebUntisProvider with
     }
   }
 
-  override def loadList(server: String, school: String, username: String, password: String): Future[JsValue] = {
+  override def loadList(server: String, school: String, username: String, password: String): Future[List[TimetableElementList]] = {
     authenticate(checkUrl(server), school, username, password).flatMap { cookie =>
       cookie match {
         case Some(c) => {
           val listFutures = Future.sequence((1 to 4).toList.map(webuntisService.getElementList(checkUrl(server), c, _)))
           listFutures.map { response =>
-            Json.arr(response.map{ e =>
-              Json.parse(e._2.body).as[JsObject] ++ Json.obj("elementType" -> e._1)
-            })
+            response.map{ e =>
+              val json = Json.parse(e._2.body).as[JsObject] ++ Json.obj("elementType" -> e._1)
+              JsonUtil.objectMapper.readValue[TimetableElementList](json.toString())
+            }
           }
         }
         case None => {
           Future {
-            Json.obj()
+            List()
           }
         }
       }
     }
   }
 
-  override def loadUserData(server: String, school: String, username: String, password: String): Future[JsValue] = {
+  override def loadUserData(server: String, school: String, username: String, password: String): Future[TimetableUserData] = {
     webuntisService.getUserData(checkUrl(server), school, username, password).map{ response =>
-      Json.parse(response.body)
+      JsonUtil.objectMapper.readValue[TimetableUserDataResponse](response.body).result
     }
   }
 

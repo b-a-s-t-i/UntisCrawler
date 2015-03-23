@@ -11,12 +11,9 @@ class UserTable(tag: Tag) extends Table[User](tag, User.TABLE){
 
   def userId = column[UUID](User.ID_KEY, O.PrimaryKey)
   def email = column[String](User.EMAIL_KEY, O.NotNull)
-  def password = column[String](User.PASSWORD_KEY, O.NotNull)
   def timeStampCreate = column[DateTime](User.TIMESTAMP_CREATED_KEY, O.NotNull)
-  def activatedByUser = column[Boolean](User.ACTIVATED_BY_USER_KEY, O.NotNull)
-  def activatedByAdmin = column[Boolean](User.ACTIVATED_BY_ADMIN_KEY, O.NotNull)
 
-  override def * = (email, password, userId, timeStampCreate, activatedByUser, activatedByAdmin) <> ((User.apply _).tupled, User.unapply)
+  override def * = (email, userId, timeStampCreate) <> ((User.apply _).tupled, User.unapply)
 
   def idx = index(User.EMAIL_IDX, email, unique = true)
 }
@@ -40,10 +37,6 @@ class UserStorage {
 
   def getAllUser()(implicit session: Session): List[User] = {
     table.list
-  }
-
-  def getActivatedUser()(implicit session: Session): List[User] = {
-    table.filter(d => (d.activatedByUser && d.activatedByAdmin)).list
   }
 
   def updateUser(updatedUser: User)(implicit session: Session) = {

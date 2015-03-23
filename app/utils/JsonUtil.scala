@@ -1,10 +1,14 @@
 package utils
 
+import java.util.UUID
+
+import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
-import model.{MergedTimetablePeriod, MergedTimetableElement, TimetableResponseWrapper, TimetableResponse}
+import model._
 import play.api.Logger
+import play.api.libs.json.{Json, JsValue}
 
 import scala.util.{Failure, Success, Try}
 
@@ -45,6 +49,19 @@ object JsonUtil {
         Logger.error(s"Failed to parse Json: ${e.getMessage}")
         e.printStackTrace()
         None
+      }
+    }
+  }
+
+
+  def getMobileResponse[A](userId: UUID, data: A): JsValue = {
+    Try(objectMapper.writeValueAsString(GenericResponse(userId, data))) match {
+      case Success(d) => {
+        Json.parse(d)
+      }
+      case Failure(e) => {
+        Logger.warn("Not able to create response")
+        Json.arr(Json.obj("error" -> "true"))
       }
     }
   }

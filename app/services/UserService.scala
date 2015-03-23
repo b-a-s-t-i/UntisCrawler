@@ -4,36 +4,33 @@ import java.util.UUID
 
 import model.User
 import org.joda.time.DateTime
-import org.mindrot.jbcrypt.BCrypt
+import play.api.Logger
 import scaldi.{Injector, Injectable}
 import storage.UserStorage
 import play.api.db.slick.DB
 import play.api.Play.current
 
 trait UserService{
-  def addUser(email: String, password: String): Boolean
+  def addUser(email: String): Boolean
   def getUserByEmail(email: String): Option[User]
   def getUserById(id: UUID): Option[User]
   def isUserRegistered(email: String): Boolean
-  def isLoginValid(email: String, password: String): Boolean
   def getAllUser(): List[User]
-  def getActivatedUser(): List[User]
-  def setUserActivated(user: User, activatedByEmail: Boolean, activatedByAdmin: Boolean)
 }
 
 class UserServiceImpl(implicit inj: Injector) extends UserService with Injectable {
 
   val storage = inject[UserStorage]
 
-  override def addUser(email: String, password: String): Boolean = {
+  override def addUser(email: String): Boolean = {
     DB.withTransaction { implicit session =>
-      storage.existsUserWithEmail(email) match{
-        case true => false
-        case false => {
-          val pwdHash = BCrypt.hashpw(password, BCrypt.gensalt())
-          storage.addUser(User(email, pwdHash, UUID.randomUUID(), DateTime.now(),false, false))
-          true
-        }
+      if(!storage.existsUserWithEmail(email)){
+        val u = User(email, UUID.randomUUID(), DateTime.now())
+        Logger.info(u.toString)
+        storage.addUser(u)
+        true
+      }else{
+        false
       }
     }
   }
@@ -44,27 +41,9 @@ class UserServiceImpl(implicit inj: Injector) extends UserService with Injectabl
     }
   }
 
-  override def isLoginValid(email: String, password: String): Boolean = {
-    getUserByEmail(email).map { user =>
-      BCrypt.checkpw(password, user.password)
-    }.getOrElse(false)
-  }
-
   override def getAllUser(): List[User] = {
     DB.withSession { implicit session =>
       storage.getAllUser
-    }
-  }
-
-  override def getActivatedUser(): List[User] = {
-    DB.withSession { implicit session =>
-      storage.getActivatedUser()
-    }
-  }
-
-  override def setUserActivated(user: User, activatedByEmail: Boolean, activatedByAdmin: Boolean): Unit = {
-    DB.withTransaction { implicit session =>
-      storage.updateUser(user.copy(activatedByAdmin = activatedByAdmin, activatedByUser = activatedByEmail))
     }
   }
 

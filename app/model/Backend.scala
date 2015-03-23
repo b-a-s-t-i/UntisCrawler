@@ -5,21 +5,15 @@ import java.util.UUID
 import org.joda.time.DateTime
 
 case class User(email: String,
-                password: String,
                 userId: UUID,
-                timeStampCreated: DateTime,
-                activatedByUser: Boolean = false,
-                activatedByAdmin: Boolean = false
-                 )
+                timeStampCreated: DateTime
+               )
 
 object User{
   final val TABLE = "user"
   final val EMAIL_KEY = "email"
-  final val PASSWORD_KEY = "password"
   final val ID_KEY = "id"
   final val TIMESTAMP_CREATED_KEY = "dateTime"
-  final val ACTIVATED_BY_USER_KEY = "activatedByUser"
-  final val ACTIVATED_BY_ADMIN_KEY = "activatedByAdmin"
 
   final val EMAIL_IDX = "email_index"
 }
