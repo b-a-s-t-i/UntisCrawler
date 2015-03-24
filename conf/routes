@@ -16,7 +16,7 @@ POST        /user/registerPush                    @controllers.UserController.re
 
 POST        /timetable/schoolSearch               @controllers.TimetableController.schoolSearch(query: String)
 
-POST        /timetable/saveTimetableConfig        @controllers.TimetableController.saveTimetableConfig(server: String, school: String, user: String, password: String, elementId: Int, elementTyp: Int)
+POST        /timetable/saveTimetableConfig        @controllers.TimetableController.saveTimetableConfig(server: String, school: String, user: String, password: String, elementId: Int, elementType: Int)
 
 GET         /timetable/loadTimetableData          @controllers.TimetableController.loadTimetableData(server: String, school: String, user: String, password: String)
 
